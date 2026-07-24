@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* ── Inputs (tema claro) ── */
+  .input-light {
+    @apply w-full bg-inputBg text-textDark placeholder-textMuted/50
+           border border-border rounded-lg px-4 py-2.5
+           focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30
+           transition text-sm;
+  }
+
+  /* ── Inputs (tema oscuro — login) ── */
+  .input-base {
+    @apply w-full bg-input text-text placeholder-muted/60 border border-white/5
+           rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary
+           focus:ring-1 focus:ring-primary transition;
+  }
+
+  /* ── Botones ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90
+           text-white font-semibold px-4 py-2.5 rounded-lg transition
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 text-textMuted hover:text-textDark
+           hover:bg-black/5 font-medium px-4 py-2.5 rounded-lg transition;
+  }
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-sidebarBg hover:bg-sidebarHov
+           text-white font-semibold px-5 py-3 rounded-xl transition
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ── Paneles / Tarjetas ── */
+  .panel {
+    @apply bg-panel border border-white/5 rounded-2xl;
+  }
+  .card {
+    @apply bg-bgCard border border-border rounded-2xl shadow-card;
+  }
+
+  /* ── Badge de estado ── */
+  .badge-adapter {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
+           bg-primaryLt text-primary border border-primary/20 rounded-full;
+  }
+}
