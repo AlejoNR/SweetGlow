@@ -1,8 +1,7 @@
-
 export class InventarioSubject {
   constructor() {
     this.observadores = []
-    this.alimentos = []
+    this.productos = []
   }
 
   attach(observador) {
@@ -19,15 +18,12 @@ export class InventarioSubject {
     this.observadores.forEach((o) => o.actualizar(evento, datos))
   }
 
-  /** Actualiza el inventario y dispara alertas si hay productos en riesgo. */
-  setAlimentos(alimentos, ahora = new Date()) {
-    this.alimentos = alimentos
-    const enRiesgo = alimentos.filter((a) =>
-      ['critico', 'urgente'].includes(a.estadoCaducidad(ahora))
-    )
-    this.notify('inventario-actualizado', alimentos)
-    if (enRiesgo.length > 0) {
-      this.notify('alerta-caducidad', enRiesgo)
-    }
+  setProductos(productos) {
+    this.productos = productos
+    this.notify('inventario-actualizado', productos)
+  }
+
+  setAlimentos(lista) {
+    this.setProductos(lista)
   }
 }

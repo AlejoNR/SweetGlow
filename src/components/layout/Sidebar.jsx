@@ -1,67 +1,55 @@
-import { useSession } from '../../context/SessionContext.jsx'
-
 function Sidebar({ vista, setVista }) {
-  const { usuario } = useSession()
 
   const secciones = [
     {
       titulo: 'PRINCIPAL',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icono: <i className="fa-solid fa-chart-line"></i> },
-        { id: 'inventory', label: 'Inventario', icono: <i className="fa-solid fa-boxes-stacked"></i> },
-        { id: 'lotes', label: 'Lotes', icono: <i className="fa-solid fa-layer-group"></i> },
+        { id: 'dashboard', label: 'Dashboard', icono: <i className="fa-solid fa-chart-pie"></i> },
+        { id: 'inventory', label: 'Inventario', icono: <i className="fa-solid fa-box-open"></i> },
       ],
     },
     {
-      titulo: 'GESTIÓN',
+      titulo: 'REGISTROS Y CONTROL',
       items: [
-        { id: 'importar', label: 'Importar Catálogo', icono: <i className="fa-solid fa-file-import"></i> },
-        { id: 'reportes', label: 'Reportes FEFO', icono: <i className="fa-solid fa-file-pdf"></i> },
+        { id: 'historial', label: 'Compras & Ventas', icono: <i className="fa-solid fa-receipt"></i> },
+        { id: 'estadisticas', label: 'Estadísticas', icono: <i className="fa-solid fa-chart-bar"></i> },
+        { id: 'importar', label: 'Importar Excel', icono: <i className="fa-solid fa-file-excel"></i> },
       ],
     },
   ]
 
-  if (usuario?.rol === 'admin') {
-    secciones.push({
-      titulo: 'ADMINISTRACIÓN',
-      items: [
-        { id: 'usuarios', label: 'Usuarios', icono: <i className="fa-solid fa-users"></i> },
-      ],
-    })
-  }
-
   return (
-    <aside className="w-16 md:w-64 bg-sidebarBg flex flex-col py-6 shrink-0 min-h-screen">
-      {/* Logo */}
-      <div className="px-4 mb-8 flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
-          <i className="fa-solid fa-leaf text-primary text-lg"></i>
+    <aside className="w-16 md:w-64 bg-sidebarBg flex flex-col py-6 shrink-0 min-h-screen border-r border-primary/20 shadow-xl shadow-primary/5 z-10">
+      {/* Logo Sweet Glow */}
+      <div className="px-4 mb-8 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent shadow-pinkGlow flex items-center justify-center shrink-0 text-white">
+          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
         </div>
         <div className="hidden md:block">
-          <span className="font-bold text-white text-sm tracking-wide">SIGI</span>
-          <p className="text-sidebarTxt text-[10px] uppercase tracking-widest leading-tight">Gestión de Inventario</p>
+          <span className="font-extrabold text-sidebarTxt text-lg tracking-tight font-sans">Sweet Glow</span>
+          <p className="text-primary text-[10px] uppercase font-bold tracking-widest leading-tight">Cosmetics</p>
         </div>
       </div>
 
-      {/* Secciones de navegación */}
-      <nav className="flex-1 flex flex-col gap-6 px-2">
+      {/* Navegación */}
+      <nav className="flex-1 flex flex-col gap-6 px-3">
         {secciones.map((sec) => (
           <div key={sec.titulo}>
-            <p className="hidden md:block text-sidebarTxt/50 text-[10px] font-semibold tracking-widest uppercase px-3 mb-2">
+            <p className="hidden md:block text-sidebarTxt/60 text-[10px] font-bold tracking-widest uppercase px-3 mb-2">
               {sec.titulo}
             </p>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {sec.items.map((it) => (
                 <button
                   key={it.id}
                   onClick={() => setVista(it.id)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     vista === it.id
-                      ? 'bg-primary text-white shadow-md shadow-primary/25'
-                      : 'text-sidebarTxt hover:text-white hover:bg-white/8'
+                      ? 'bg-gradient-to-r from-primary to-primaryHover text-white shadow-lg shadow-primary/30'
+                      : 'text-sidebarTxt hover:text-primary hover:bg-white/60'
                   }`}
                 >
-                  <span className="text-lg shrink-0">{it.icono}</span>
+                  <span className="text-base shrink-0">{it.icono}</span>
                   <span className="hidden md:block">{it.label}</span>
                 </button>
               ))}

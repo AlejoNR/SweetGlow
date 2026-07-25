@@ -1,136 +1,123 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { LocalStorageGateway } from '../core/persistence/LocalStorageGateway.js'
+import { useState, useEffect, useMemo } from 'react'
+import { FirestoreGateway } from '../core/persistence/FirestoreGateway.js'
 import { RepositorioInventario } from '../core/services/RepositorioInventario.js'
 import InventoryTable from '../components/inventory/InventoryTable.jsx'
-import AddFoodModal from '../components/inventory/AddFoodModal.jsx'
+import AddCompraModal from '../components/inventory/AddCompraModal.jsx'
 import EditFoodModal from '../components/inventory/EditFoodModal.jsx'
-
+import ProductDetailModal from '../components/inventory/ProductDetailModal.jsx'
 import Loader from '../components/common/Loader.jsx'
-import { MotorFEFO } from '../core/services/MotorFEFO.js'
 
 function Inventory() {
-  const [alimentos, setAlimentos] = useState([])
+  const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
-  const [modalAdd, setModalAdd] = useState(false)
-  const [alimentoEditando, setAlimentoEditando] = useState(null)
-
-
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const [productoEditando, setProductoEditando] = useState(null)
+  const [productoDetalle, setProductoDetalle] = useState(null)
+  
   const [busqueda, setBusqueda] = useState('')
-  const [filtroCategoria, setFiltroCategoria] = useState('Todos')
+  const [filtroCategoria, setFiltroCategoria] = useState('todas')
 
-  const repo = new RepositorioInventario(new LocalStorageGateway())
+  const repo = new RepositorioInventario(new FirestoreGateway())
 
-  const recargar = useCallback(async () => {
+  const cargar = async () => {
     setCargando(true)
-    setAlimentos(await repo.listar())
+    setProductos(await repo.listar())
     setCargando(false)
+  }
+
+  useEffect(() => {
+    cargar()
   }, [])
 
-  useEffect(() => { recargar() }, [recargar])
-
-  const handleAgregar = async (alimento) => {
-    await repo.guardar(alimento)
-    setModalAdd(false)
-    recargar()
+  const handleGuardarCompraExitosa = async () => {
+    await cargar()
+    setModalAbierto(false)
   }
 
-  const handleActualizar = async (alimento) => {
-    await repo.guardar(alimento) // El repositorio guarda sobrescribiendo si el ID existe
-    setAlimentoEditando(null)
-    recargar()
+  const handleActualizar = async (producto) => {
+    await repo.guardar(producto) 
+    setProductoEditando(null)
+    await cargar()
   }
-
-
 
   const handleEliminar = async (id) => {
-    const confirmar = window.confirm('¿Seguro que deseas eliminar este alimento?')
-    if (!confirmar) return
-    await repo.eliminar(id)
-    recargar()
+    const confirmar = window.confirm('¿Seguro que deseas eliminar este producto?')
+    if (confirmar) {
+      await repo.eliminar(id)
+      await cargar()
+    }
   }
 
-  const categoriasMenu = [
-    { label: 'Todos', id: 'Todos', icon: null },
-    { label: 'Cárnico', id: 'carnico', icon: 'fa-drumstick-bite' },
-    { label: 'Lácteo', id: 'lacteo', icon: 'fa-cheese' },
-    { label: 'Fruta/Verd.', id: 'vegetal', icon: 'fa-apple-whole' },
-    { label: 'Seco', id: 'seco', icon: 'fa-wheat-awn' },
-  ]
-
-  // Filter and sort the list
   const filtrados = useMemo(() => {
-    let lista = alimentos
-    if (filtroCategoria !== 'Todos') {
-      lista = lista.filter(a => a.categoria.toLowerCase() === filtroCategoria.toLowerCase())
+    let lista = productos
+    if (filtroCategoria !== 'todas') {
+      lista = lista.filter((p) => p.categoria === filtroCategoria)
     }
-    if (busqueda.trim()) {
-      const q = busqueda.toLowerCase()
-      lista = lista.filter(a => a.nombre.toLowerCase().includes(q) || (a.lote && a.lote.toLowerCase().includes(q)))
+    if (busqueda.trim() !== '') {
+      const b = busqueda.toLowerCase()
+      lista = lista.filter((p) => 
+        p.nombre?.toLowerCase().includes(b) || 
+        p.marca?.toLowerCase().includes(b) ||
+        p.lote?.toLowerCase().includes(b)
+      )
     }
-    return MotorFEFO.ordenar(lista)
-  }, [alimentos, busqueda, filtroCategoria])
+    return lista
+  }, [productos, busqueda, filtroCategoria])
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <i className="fa-solid fa-boxes-stacked text-primary text-xl"></i>
-        <h1 className="text-primary font-bold text-lg">Inventario ordenado por FEFO</h1>
-        <span className="text-textMuted text-xs font-medium ml-2">(fecha de vencimiento más próxima primero)</span>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-textDark text-2xl font-bold">Inventario</h1>
+          <p className="text-textMuted text-sm">Gestiona tus productos de maquillaje</p>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="relative w-full md:w-64">
-          <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-          <input
-            type="text"
-            placeholder="Buscar alimento..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2 overflow-x-auto">
-          {categoriasMenu.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setFiltroCategoria(cat.id)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${filtroCategoria === cat.id
-                ? 'bg-primary text-white shadow-md shadow-primary/20'
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                }`}
-            >
-              {cat.icon && <i className={`fa-solid ${cat.icon}`}></i>}
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        <button onClick={() => setModalAdd(true)} className="btn-primary rounded-full px-5 py-2 text-sm ml-auto whitespace-nowrap shadow-md shadow-primary/30 flex items-center gap-2">
-          <i className="fa-solid fa-plus"></i> Registrar alimento
-        </button>
-      </div>
-
-      <div className="card overflow-hidden border border-gray-100 shadow-sm">
-        {cargando ? <Loader /> : <InventoryTable alimentos={filtrados} onEliminar={handleEliminar} onEditar={setAlimentoEditando} />}
-
-        {!cargando && (
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-textMuted bg-gray-50/50">
-            <span>Mostrando {filtrados.length} de {alimentos.length} items</span>
-            <div className="flex gap-1">
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50"><i className="fa-solid fa-chevron-left"></i></button>
-              <button className="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50">2</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50">3</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50"><i className="fa-solid fa-chevron-right"></i></button>
-            </div>
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex w-full md:w-auto gap-2">
+          <div className="relative flex-1 md:w-64">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-textMuted"></i>
+            <input 
+              type="text" 
+              placeholder="Buscar producto, marca o lote..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="input-field pl-10 w-full"
+            />
           </div>
-        )}
+          <select 
+            className="input-field w-auto min-w-[140px]"
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
+          >
+            <option value="todas">Todas las categorías</option>
+            <option value="rostro">Rostro</option>
+            <option value="ojos">Ojos</option>
+            <option value="labios">Labios</option>
+            <option value="cuidado_piel">Cuidado de la Piel</option>
+          </select>
+        </div>
+
+        <div className="flex w-full md:w-auto gap-2">
+          <button className="btn-primary flex-1 md:flex-none justify-center" onClick={() => setModalAbierto(true)}>
+            <i className="fa-solid fa-cart-plus"></i> Registrar Compra
+          </button>
+        </div>
       </div>
 
-      {modalAdd && <AddFoodModal onAgregar={handleAgregar} onCerrar={() => setModalAdd(false)} />}
-      {alimentoEditando && <EditFoodModal alimento={alimentoEditando} onActualizar={handleActualizar} onCerrar={() => setAlimentoEditando(null)} />}
+      <div className="card">
+        {cargando ? <Loader /> : <InventoryTable productos={filtrados} onEliminar={handleEliminar} onEditar={setProductoEditando} onVerDetalle={setProductoDetalle} />}
+        
+        <div className="p-4 border-t border-border flex justify-between items-center text-sm text-textMuted bg-inputBg rounded-b-xl">
+          <span>Mostrando {filtrados.length} de {productos.length} items</span>
+        </div>
+      </div>
 
+      {modalAbierto && <AddCompraModal onGuardarExitoso={handleGuardarCompraExitosa} onCerrar={() => setModalAbierto(false)} />}
+      
+      {productoEditando && <EditFoodModal producto={productoEditando} onActualizar={handleActualizar} onCerrar={() => setProductoEditando(null)} />}
+
+      {productoDetalle && <ProductDetailModal producto={productoDetalle} onCerrar={() => setProductoDetalle(null)} />}
     </div>
   )
 }

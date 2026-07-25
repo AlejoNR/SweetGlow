@@ -1,9 +1,9 @@
-import { LocalStorageGateway } from '../persistence/LocalStorageGateway.js'
+import { FirestoreGateway } from '../persistence/FirestoreGateway.js'
 import bcrypt from 'bcryptjs'
 
 export class RepositorioUsuarios {
   constructor() {
-    this.gateway = new LocalStorageGateway()
+    this.gateway = new FirestoreGateway('usuarios')
     this.coleccion = 'usuarios'
   }
 
@@ -41,9 +41,7 @@ export class RepositorioUsuarios {
       estado
     }
 
-    usuarios.push(nuevoUsuario)
-    await this.gateway.guardar(this.coleccion, usuarios)
-    
+    await this.gateway.guardar(nuevoUsuario.id, nuevoUsuario)
     return nuevoUsuario
   }
 
@@ -53,8 +51,7 @@ export class RepositorioUsuarios {
     if (index === -1) {
       throw new Error('Usuario no encontrado.')
     }
-    usuarios.splice(index, 1)
-    await this.gateway.guardar(this.coleccion, usuarios)
+    await this.gateway.eliminar(id)
     return true
   }
 
@@ -64,8 +61,7 @@ export class RepositorioUsuarios {
     if (index === -1) {
       throw new Error('Usuario no encontrado.')
     }
-    usuarios[index].estado = nuevoEstado
-    await this.gateway.guardar(this.coleccion, usuarios)
+    await this.gateway.guardar(id, usuarios[index])
     return true
   }
 }

@@ -1,48 +1,40 @@
-import { AlimentoFactory } from '../factories/AlimentoFactory.js'
+import { MaquillajeFactory } from '../factories/MaquillajeFactory.js'
 
 /**
- * Repositorio que persiste y reconstruye alimentos. Al leer del gateway
- * reconstruye las instancias a traves del AlimentoFactory, de modo que
- * siempre se trabaja con objetos de dominio (con sus metodos), no JSON plano.
+ * Repositorio que persiste y reconstruye productos de maquillaje.
+ * Se comunica con el FirestoreGateway para guardar en la base de datos.
  */
 export class RepositorioInventario {
   constructor(gateway) {
     this.gateway = gateway
-    this.clave = 'inventario'
   }
 
   async listar() {
-    const datos = (await this.gateway.obtener(this.clave)) || []
-    const alimentos = []
+    const datos = await this.gateway.obtener()
+    const productos = []
     for (const d of datos) {
       try {
-        alimentos.push(AlimentoFactory.crearAlimento(d.categoria, d))
+        productos.push(MaquillajeFactory.crearProducto(d.categoria, d))
       } catch (e) {
         console.warn('Registro de inventario invalido, se omite:', d, e.message)
       }
     }
-    return alimentos
+    return productos
   }
 
-  async guardar(alimento) {
-    const datos = (await this.gateway.obtener(this.clave)) || []
-    const idx = datos.findIndex((d) => d.id === alimento.id)
-    if (idx >= 0) datos[idx] = alimento.toJSON()
-    else datos.push(alimento.toJSON())
-    await this.gateway.guardar(this.clave, datos)
-    return alimento
+  async guardar(producto) {
+    await this.gateway.guardar(producto.id, producto.toJSON())
+    return producto
   }
 
-  async guardarVarios(alimentos) {
-    const datos = (await this.gateway.obtener(this.clave)) || []
-    alimentos.forEach((a) => datos.push(a.toJSON()))
-    await this.gateway.guardar(this.clave, datos)
-    return alimentos
+  async guardarVarios(productos) {
+    for (const p of productos) {
+      await this.gateway.guardar(p.id, p.toJSON())
+    }
+    return productos
   }
 
   async eliminar(id) {
-    let datos = (await this.gateway.obtener(this.clave)) || []
-    datos = datos.filter((d) => d.id !== id)
-    await this.gateway.guardar(this.clave, datos)
+    await this.gateway.eliminar(id)
   }
 }

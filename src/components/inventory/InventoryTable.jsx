@@ -1,137 +1,98 @@
-import { MotorFEFO } from '../../core/services/MotorFEFO.js'
-
 function getCategoryIcon(cat) {
-  switch (cat.toLowerCase()) {
-    case 'carnico': return 'fa-drumstick-bite';
-    case 'lacteo': return 'fa-cheese';
-    case 'vegetal': return 'fa-apple-whole';
-    case 'seco': return 'fa-wheat-awn';
-    case 'preparado': return 'fa-utensils';
+  switch (cat?.toLowerCase()) {
+    case 'rostro': return 'fa-face-smile';
+    case 'ojos': return 'fa-eye';
+    case 'labios': return 'fa-lips';
+    case 'cuidado_piel': return 'fa-leaf';
     default: return 'fa-box';
   }
 }
 
-function getStatusBadge(estado) {
-  const styles = {
-    critico: 'text-red-600 bg-red-50',
-    urgente: 'text-orange-500 bg-orange-50',
-    preventivo: 'text-amber-500 bg-amber-50',
-    fresco: 'text-emerald-600 bg-emerald-50'
+function InventoryTable({ productos, onEliminar, onEditar, onVerDetalle }) {
+  if (productos.length === 0) {
+    return <p className="text-textMuted text-sm py-8 text-center bg-white">No se encontraron productos en el inventario.</p>
   }
-  const colorPoint = {
-    critico: 'bg-red-500',
-    urgente: 'bg-orange-400',
-    preventivo: 'bg-amber-400',
-    fresco: 'bg-emerald-500'
-  }
-  const labels = {
-    critico: 'Crítico',
-    urgente: 'Urgente',
-    preventivo: 'Preventivo',
-    fresco: 'Sin alerta'
-  }
-  
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${styles[estado] || styles.fresco}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${colorPoint[estado] || colorPoint.fresco}`}></span>
-      {labels[estado] || labels.fresco}
-    </span>
-  )
-}
 
-function formatDays(horas) {
-  if (horas <= 0) return <span className="text-red-600 font-bold text-xs">Vencido</span>
-  const dias = Math.floor(horas / 24)
-  if (dias === 0) return <span className="text-red-600 font-bold text-xs">Hoy</span>
-  if (dias <= 2) return <span className="text-red-600 font-bold text-xs">{dias} {dias === 1 ? 'día' : 'días'}</span>
-  if (dias <= 7) return <span className="text-amber-600 font-bold text-xs">{dias} días</span>
-  return <span className="text-emerald-700 font-bold text-xs">{dias} días</span>
-}
-
-function formatDateShort(iso) {
-  if (!iso) return '-'
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function InventoryTable({ alimentos, onEliminar, onEditar }) {
-  if (alimentos.length === 0) {
-    return <p className="text-textMuted text-sm py-8 text-center bg-white">No se encontraron productos.</p>
-  }
+  const formatMoneda = (n) => `$${Number(n || 0).toLocaleString('es-CO')}`
 
   return (
-    <div className="overflow-x-auto bg-white">
+    <div className="overflow-x-auto bg-white rounded-t-xl">
       <table className="w-full text-sm text-left">
         <thead className="bg-white border-b border-gray-100">
           <tr className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-            <th className="py-4 px-4 font-bold text-center">FEFO #</th>
-            <th className="py-4 px-4 font-bold">Alimento</th>
+            <th className="py-4 px-4 font-bold w-16 text-center">Foto</th>
+            <th className="py-4 px-4 font-bold">Producto</th>
             <th className="py-4 px-4 font-bold">Categoría</th>
-            <th className="py-4 px-4 font-bold">Cantidad</th>
-            <th className="py-4 px-4 font-bold">Vence</th>
-            <th className="py-4 px-4 font-bold">Días Restantes</th>
-            <th className="py-4 px-4 font-bold">Estado</th>
+            <th className="py-4 px-4 font-bold text-center">Stock</th>
+            <th className="py-4 px-4 font-bold text-right text-emerald-600">Precio Venta</th>
             <th className="py-4 px-4 font-bold text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {alimentos.map((a, index) => {
-            const horas = Math.round(a.horasParaCaducar())
-            const isCritico = a.estadoCaducidad() === 'critico'
-            const isUrgente = a.estadoCaducidad() === 'urgente'
-            
-            let bgIndex = 'bg-emerald-500'
-            if (isCritico) bgIndex = 'bg-emerald-500' // Matches the image where numbers are green/yellow/orange
-            if (index === 3 || index === 4) bgIndex = 'bg-amber-400'
-            if (index > 4) bgIndex = 'bg-gray-200 text-gray-500'
-
+          {productos.map((p) => {
+            const stockBajo = p.cantidad <= 2
             return (
-              <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                <td className="py-3 px-4 text-center">
-                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-white text-xs font-bold ${
-                    a.estadoCaducidad() === 'critico' ? 'bg-emerald-500' :
-                    a.estadoCaducidad() === 'urgente' ? 'bg-amber-400' :
-                    a.estadoCaducidad() === 'preventivo' ? 'bg-amber-300 text-amber-900' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {index + 1}
-                  </span>
+              <tr 
+                key={p.id} 
+                className="border-b border-gray-50 hover:bg-primaryLt/30 transition-colors cursor-pointer group"
+                onClick={() => onVerDetalle(p)}
+              >
+                <td className="py-3 px-4">
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden mx-auto flex items-center justify-center">
+                    {p.imagenUrl ? (
+                      <img src={p.imagenUrl} alt={p.nombre} className="w-full h-full object-cover" />
+                    ) : (
+                      <i className="fa-solid fa-image text-gray-300"></i>
+                    )}
+                  </div>
                 </td>
                 <td className="py-3 px-4">
-                  <p className="font-bold text-gray-800">{a.nombre}</p>
-                  {a.lote && <p className="text-[10px] text-gray-400 font-medium">Lote #{a.lote}</p>}
+                  <p className="font-bold text-gray-800 group-hover:text-primary transition-colors">{p.nombre}</p>
+                  <p className="text-[10px] text-gray-400 font-medium">
+                    {p.marca} {p.tono && ` - ${p.tono}`}
+                  </p>
                 </td>
                 <td className="py-3 px-4">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-gray-100/80 text-gray-500 text-xs font-medium">
-                    <i className={`fa-solid ${getCategoryIcon(a.categoria)} text-[10px]`}></i>
-                    <span className="capitalize">{a.categoria}</span>
+                    <i className={`fa-solid ${getCategoryIcon(p.categoria)} text-[10px]`}></i>
+                    <span className="capitalize">{p.categoria?.replace('_', ' ')}</span>
                   </span>
                 </td>
-                <td className="py-3 px-4 font-medium text-gray-600">
-                  {a.cantidad} <span className="text-gray-400 text-xs">{a.unidad}</span>
-                </td>
-                <td className="py-3 px-4 font-medium text-gray-500 font-mono text-xs">
-                  {formatDateShort(a.fechaCaducidad)}
-                </td>
-                <td className="py-3 px-4">
-                  {formatDays(horas)}
-                </td>
-                <td className="py-3 px-4">
-                  {getStatusBadge(a.estadoCaducidad())}
-                </td>
                 <td className="py-3 px-4 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <span className={`font-bold ${stockBajo ? 'text-amber-600' : 'text-gray-600'}`}>
+                    {p.cantidad}
+                  </span>
+                  <span className="text-gray-400 text-xs ml-1">{p.unidad}</span>
+                  {stockBajo && p.cantidad > 0 && (
+                    <p className="text-[9px] text-amber-500 font-semibold mt-0.5">Stock bajo</p>
+                  )}
+                  {p.cantidad === 0 && (
+                    <p className="text-[9px] text-red-500 font-semibold mt-0.5">Agotado</p>
+                  )}
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <span className="font-bold text-emerald-600 text-base">{formatMoneda(p.precioVenta)}</span>
+                </td>
+                <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-center gap-1">
                     <button 
-                      onClick={() => onEditar(a)} 
-                      className="w-7 h-7 rounded flex items-center justify-center text-emerald-600 hover:bg-emerald-50 transition-colors"
-                      title="Actualizar Alimento"
+                      onClick={() => onVerDetalle(p)}
+                      className="w-7 h-7 rounded flex items-center justify-center text-primary hover:bg-primaryLt transition-colors"
+                      title="Ver historial de precios"
+                    >
+                      <i className="fa-solid fa-clock-rotate-left text-xs"></i>
+                    </button>
+                    <button 
+                      onClick={() => onEditar(p)} 
+                      className="w-7 h-7 rounded flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors"
+                      title="Editar Producto"
                     >
                       <i className="fa-solid fa-pen text-xs"></i>
                     </button>
-
                     <button 
-                      onClick={() => onEliminar(a.id)} 
+                      onClick={() => onEliminar(p.id)} 
                       className="w-7 h-7 rounded flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
-                      title="Eliminar Alimento"
+                      title="Eliminar Producto"
                     >
                       <i className="fa-solid fa-trash text-xs"></i>
                     </button>

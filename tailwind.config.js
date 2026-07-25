@@ -4,41 +4,39 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* ── Tema claro (contenido principal) ── */
-        bg:         '#F5F7FA',
+        /* ── Tema Claro Sweet Glow (Rosados y Pasteles) ── */
+        bg:         '#FFF5F8', // Fondo rosa pastel muy suave y limpio
         bgCard:     '#FFFFFF',
-        textDark:   '#1A2332',
-        textMuted:  '#64748B',
-        border:     '#E2E8F0',
-        inputBg:    '#F8FAFC',
+        textDark:   '#2D0C1E', // Vino/Ciruela profundo elegante para lectura
+        textMuted:  '#9D6B84', // Rosa sepia/púrpura tenue
+        border:     '#FCE7F3', // Borde rosa pastel (pink-100)
+        inputBg:    '#FFF0F5', // Lavender blush
 
-        /* ── Sidebar verde oscuro ── */
-        sidebarBg:  '#0F2A1D',
-        sidebarHov: '#163D2B',
-        sidebarTxt: '#94D2B0',
+        /* ── Sidebar Chic Rosado Pastel ── */
+        sidebarBg:  '#FCE7F3', // Rosa pastel claro
+        sidebarHov: '#FBCFE8', // Rosa un poco más oscuro al pasar el cursor
+        sidebarTxt: '#831843', // Texto rosa oscuro / magenta para contraste
 
-        /* ── Acentos ── */
-        primary:    '#2D9F6F',
-        primaryLt:  '#E8F5EF',
+        /* ── Acentos Sweet Glow ── */
+        primary:    '#EC4899', // Rosa vibrante icónico (pink-500)
+        primaryHover: '#DB2777', // (pink-600)
+        primaryLt:  '#FCE7F3', // Rosa pastel
+        accent:     '#F43F5E', // Rose-500
+        gold:       '#F59E0B',
 
-        /* ── Estados FEFO ── */
-        critico:    '#E63946',
-        urgente:    '#F4A261',
-        preventivo: '#E9C46A',
-        fresco:     '#52B788',
-
-        /* ── Legacy aliases (login dark screen) ── */
-        panel:      '#122B22',
-        input:      '#1A3A2E',
-        text:       '#E8F1ED',
-        muted:      '#8AA69B',
+        /* ── Aliases legacy ── */
+        panel:      '#2D0C1E',
+        input:      '#3B0E2A',
+        text:       '#FDF2F8',
+        muted:      '#FBCFE8',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        card: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-        cardHover: '0 4px 12px rgba(0,0,0,0.08)',
+        card: '0 4px 20px -2px rgba(236, 72, 153, 0.08), 0 2px 6px -1px rgba(0,0,0,0.02)',
+        cardHover: '0 10px 25px -3px rgba(236, 72, 153, 0.15)',
+        pinkGlow: '0 0 20px rgba(236, 72, 153, 0.35)',
       },
     },
   },
