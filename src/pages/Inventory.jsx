@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { FirestoreGateway } from '../core/persistence/FirestoreGateway.js'
 import { RepositorioInventario } from '../core/services/RepositorioInventario.js'
 import InventoryTable from '../components/inventory/InventoryTable.jsx'
-import AddCompraModal from '../components/inventory/AddCompraModal.jsx'
+import AddProductoModal from '../components/inventory/AddProductoModal.jsx'
 import EditFoodModal from '../components/inventory/EditFoodModal.jsx'
 import ProductDetailModal from '../components/inventory/ProductDetailModal.jsx'
 import Loader from '../components/common/Loader.jsx'
@@ -29,7 +29,7 @@ function Inventory() {
     cargar()
   }, [])
 
-  const handleGuardarCompraExitosa = async () => {
+  const handleGuardarProductoExitoso = async () => {
     await cargar()
     setModalAbierto(false)
   }
@@ -100,7 +100,7 @@ function Inventory() {
 
         <div className="flex w-full md:w-auto gap-2">
           <button className="btn-primary flex-1 md:flex-none justify-center" onClick={() => setModalAbierto(true)}>
-            <i className="fa-solid fa-cart-plus"></i> Registrar Compra
+            <i className="fa-solid fa-plus-circle"></i> Registrar Producto
           </button>
         </div>
       </div>
@@ -113,7 +113,7 @@ function Inventory() {
         </div>
       </div>
 
-      {modalAbierto && <AddCompraModal onGuardarExitoso={handleGuardarCompraExitosa} onCerrar={() => setModalAbierto(false)} />}
+      {modalAbierto && <AddProductoModal onGuardarExitoso={handleGuardarProductoExitoso} onCerrar={() => setModalAbierto(false)} />}
       
       {productoEditando && <EditFoodModal producto={productoEditando} onActualizar={handleActualizar} onCerrar={() => setProductoEditando(null)} />}
 
