@@ -12,6 +12,7 @@ function AddCompraModal({ onGuardarExitoso, onCerrar }) {
   const [cantidad, setCantidad] = useState('')
   const [precioCompra, setPrecioCompra] = useState('')
   const [porcentajeGanancia, setPorcentajeGanancia] = useState('30')
+  const [precioVenta, setPrecioVenta] = useState('')
 
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
@@ -38,13 +39,49 @@ function AddCompraModal({ onGuardarExitoso, onCerrar }) {
         setCategoria(p.categoria || 'rostro')
         if (p.precioCompra) setPrecioCompra(String(p.precioCompra))
         if (p.porcentajeGanancia) setPorcentajeGanancia(String(p.porcentajeGanancia))
+        if (p.precioVenta) {
+          setPrecioVenta(String(p.precioVenta))
+        } else if (p.precioCompra) {
+          const ganancia = p.porcentajeGanancia || 30
+          const venta = p.precioCompra + (p.precioCompra * (ganancia / 100))
+          setPrecioVenta(String(venta))
+        }
       }
     }
   }, [productoId, productos])
 
+  const handlePrecioCompraChange = (e) => {
+    const val = e.target.value
+    setPrecioCompra(val)
+    const compra = Number(val) || 0
+    const ganancia = Number(porcentajeGanancia) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setPrecioVenta(venta ? String(venta.toFixed(0)) : '')
+  }
+
+  const handlePorcentajeGananciaChange = (e) => {
+    const val = e.target.value
+    setPorcentajeGanancia(val)
+    const compra = Number(precioCompra) || 0
+    const ganancia = Number(val) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setPrecioVenta(venta ? String(venta.toFixed(0)) : '')
+  }
+
+  const handlePrecioVentaChange = (e) => {
+    const val = e.target.value
+    setPrecioVenta(val)
+    const compra = Number(precioCompra) || 0
+    const venta = Number(val) || 0
+    if (compra > 0) {
+      const ganancia = ((venta - compra) / compra) * 100
+      setPorcentajeGanancia(String(Math.round(ganancia * 100) / 100))
+    }
+  }
+
   const compraNum = Number(precioCompra) || 0
   const gananciaNum = Number(porcentajeGanancia) || 0
-  const precioVentaCalc = compraNum + (compraNum * (gananciaNum / 100))
+  const precioVentaNum = Number(precioVenta) || 0
 
   const handleGuardar = async () => {
     setError('')
@@ -68,7 +105,7 @@ function AddCompraModal({ onGuardarExitoso, onCerrar }) {
         cantidad: prodExistente.cantidad + cantNum,
         precioCompra: compraNum,
         porcentajeGanancia: gananciaNum,
-        precioVenta: precioVentaCalc,
+        precioVenta: precioVentaNum,
         toJSON: function() { return { ...this } }
       }
       await repoInventario.guardar(actualizado)
@@ -81,7 +118,7 @@ function AddCompraModal({ onGuardarExitoso, onCerrar }) {
         categoria: prodExistente.categoria || categoria,
         cantidad: cantNum,
         precioCompra: compraNum,
-        precioVenta: precioVentaCalc,
+        precioVenta: precioVentaNum,
         porcentajeGanancia: gananciaNum,
         fechaCompra: new Date().toISOString(),
       })
@@ -134,17 +171,15 @@ function AddCompraModal({ onGuardarExitoso, onCerrar }) {
           <div className="p-4 bg-primaryLt/40 rounded-xl border border-primary/20 grid grid-cols-3 gap-3">
             <div>
               <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">Precio Compra ($)</label>
-              <input type="number" placeholder="0" value={precioCompra} onChange={(e) => setPrecioCompra(e.target.value)} className="input-field text-sm" />
+              <input type="number" placeholder="0" value={precioCompra} onChange={handlePrecioCompraChange} className="input-field text-sm" />
             </div>
             <div>
               <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">% Ganancia</label>
-              <input type="number" placeholder="30" value={porcentajeGanancia} onChange={(e) => setPorcentajeGanancia(e.target.value)} className="input-field text-sm" />
+              <input type="number" placeholder="30" value={porcentajeGanancia} onChange={handlePorcentajeGananciaChange} className="input-field text-sm" />
             </div>
             <div>
-              <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">Precio Venta</label>
-              <div className="input-field bg-white text-primary font-extrabold flex items-center justify-center border border-primary/30">
-                ${precioVentaCalc.toFixed(0)}
-              </div>
+              <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">Precio Venta ($)</label>
+              <input type="number" placeholder="0" value={precioVenta} onChange={handlePrecioVentaChange} className="input-field text-sm text-primary font-extrabold border-primary/30" />
             </div>
           </div>
         </div>

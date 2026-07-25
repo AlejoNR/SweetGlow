@@ -14,6 +14,7 @@ function AddProductoModal({ onGuardarExitoso, onCerrar }) {
   const [cantidad, setCantidad] = useState('')
   const [precioCompra, setPrecioCompra] = useState('')
   const [porcentajeGanancia, setPorcentajeGanancia] = useState('30')
+  const [precioVenta, setPrecioVenta] = useState('')
   const [imagenBlob, setImagenBlob] = useState(null)
 
   const [guardando, setGuardando] = useState(false)
@@ -25,9 +26,38 @@ function AddProductoModal({ onGuardarExitoso, onCerrar }) {
     if (e.target.files[0]) setImagenBlob(e.target.files[0])
   }
 
+  const handlePrecioCompraChange = (e) => {
+    const val = e.target.value
+    setPrecioCompra(val)
+    const compra = Number(val) || 0
+    const ganancia = Number(porcentajeGanancia) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setPrecioVenta(venta ? String(venta.toFixed(0)) : '')
+  }
+
+  const handlePorcentajeGananciaChange = (e) => {
+    const val = e.target.value
+    setPorcentajeGanancia(val)
+    const compra = Number(precioCompra) || 0
+    const ganancia = Number(val) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setPrecioVenta(venta ? String(venta.toFixed(0)) : '')
+  }
+
+  const handlePrecioVentaChange = (e) => {
+    const val = e.target.value
+    setPrecioVenta(val)
+    const compra = Number(precioCompra) || 0
+    const venta = Number(val) || 0
+    if (compra > 0) {
+      const ganancia = ((venta - compra) / compra) * 100
+      setPorcentajeGanancia(String(Math.round(ganancia * 100) / 100))
+    }
+  }
+
   const compraNum = Number(precioCompra) || 0
   const gananciaNum = Number(porcentajeGanancia) || 0
-  const precioVentaCalc = compraNum + (compraNum * (gananciaNum / 100))
+  const precioVentaNum = Number(precioVenta) || 0
 
   const handleGuardar = async () => {
     setError('')
@@ -64,6 +94,7 @@ function AddProductoModal({ onGuardarExitoso, onCerrar }) {
         cantidad: cantNum,
         precioCompra: compraNum,
         porcentajeGanancia: gananciaNum,
+        precioVenta: precioVentaNum,
         imagenUrl,
       })
 
@@ -189,7 +220,7 @@ function AddProductoModal({ onGuardarExitoso, onCerrar }) {
                 type="number"
                 placeholder="0"
                 value={precioCompra}
-                onChange={(e) => setPrecioCompra(e.target.value)}
+                onChange={handlePrecioCompraChange}
                 className="input-field text-sm"
               />
             </div>
@@ -199,15 +230,19 @@ function AddProductoModal({ onGuardarExitoso, onCerrar }) {
                 type="number"
                 placeholder="30"
                 value={porcentajeGanancia}
-                onChange={(e) => setPorcentajeGanancia(e.target.value)}
+                onChange={handlePorcentajeGananciaChange}
                 className="input-field text-sm"
               />
             </div>
             <div>
-              <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">Precio Venta</label>
-              <div className="input-field bg-white text-primary font-extrabold flex items-center justify-center border border-primary/30">
-                ${precioVentaCalc.toFixed(0)}
-              </div>
+              <label className="block text-textMuted text-[10px] font-bold uppercase mb-1">Precio Venta ($)</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={precioVenta}
+                onChange={handlePrecioVentaChange}
+                className="input-field text-sm text-primary font-extrabold border-primary/30"
+              />
             </div>
           </div>
         </div>

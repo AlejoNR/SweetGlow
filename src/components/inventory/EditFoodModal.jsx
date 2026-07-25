@@ -18,6 +18,33 @@ function EditFoodModal({ producto, onActualizar, onCerrar }) {
 
   const set = (campo, valor) => setDatos((d) => ({ ...d, [campo]: valor }))
 
+  const handlePrecioCompraChange = (e) => {
+    const val = e.target.value
+    const compra = Number(val) || 0
+    const ganancia = Number(datos.porcentajeGanancia) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setDatos(d => ({ ...d, precioCompra: val, precioVenta: venta ? venta.toFixed(0) : '' }))
+  }
+
+  const handlePorcentajeGananciaChange = (e) => {
+    const val = e.target.value
+    const compra = Number(datos.precioCompra) || 0
+    const ganancia = Number(val) || 0
+    const venta = compra + (compra * (ganancia / 100))
+    setDatos(d => ({ ...d, porcentajeGanancia: val, precioVenta: venta ? venta.toFixed(0) : '' }))
+  }
+
+  const handlePrecioVentaChange = (e) => {
+    const val = e.target.value
+    const compra = Number(datos.precioCompra) || 0
+    const venta = Number(val) || 0
+    let ganancia = datos.porcentajeGanancia
+    if (compra > 0) {
+      ganancia = String(Math.round(((venta - compra) / compra) * 10000) / 100)
+    }
+    setDatos(d => ({ ...d, precioVenta: val, porcentajeGanancia: ganancia }))
+  }
+
   const handleImagenChange = (e) => {
     if (e.target.files[0]) {
       setImagenBlob(e.target.files[0])
@@ -49,10 +76,6 @@ function EditFoodModal({ producto, onActualizar, onCerrar }) {
       setSubiendo(false)
     }
   }
-
-  const compra = Number(datos.precioCompra) || 0
-  const ganancia = Number(datos.porcentajeGanancia) || 0
-  const precioVentaCalc = compra + (compra * (ganancia / 100))
 
   return (
     <div className="fixed inset-0 bg-sidebarBg/40 backdrop-blur-sm flex items-center justify-center px-4 z-50">
@@ -116,17 +139,15 @@ function EditFoodModal({ producto, onActualizar, onCerrar }) {
           <div className="p-4 bg-inputBg rounded-lg border border-border grid grid-cols-3 gap-4">
             <div>
                <label className="block text-textMuted text-[10px] font-bold uppercase tracking-wide mb-1.5">Precio Compra ($)</label>
-               <input className="input-light" type="number" value={datos.precioCompra} onChange={(e) => set('precioCompra', e.target.value)} />
+               <input className="input-light" type="number" value={datos.precioCompra || ''} onChange={handlePrecioCompraChange} />
             </div>
             <div>
                <label className="block text-textMuted text-[10px] font-bold uppercase tracking-wide mb-1.5">% Ganancia</label>
-               <input className="input-light" type="number" value={datos.porcentajeGanancia} onChange={(e) => set('porcentajeGanancia', e.target.value)} />
+               <input className="input-light" type="number" value={datos.porcentajeGanancia || ''} onChange={handlePorcentajeGananciaChange} />
             </div>
             <div>
-               <label className="block text-textMuted text-[10px] font-bold uppercase tracking-wide mb-1.5">Precio Venta</label>
-               <div className="input-light bg-sidebarBg text-textDark font-bold flex items-center justify-center">
-                 ${precioVentaCalc.toFixed(2)}
-               </div>
+               <label className="block text-textMuted text-[10px] font-bold uppercase tracking-wide mb-1.5">Precio Venta ($)</label>
+               <input className="input-light text-textDark font-bold bg-sidebarBg" type="number" value={datos.precioVenta || ''} onChange={handlePrecioVentaChange} />
             </div>
           </div>
 
